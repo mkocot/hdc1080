@@ -114,7 +114,9 @@ typedef struct hdc1080_handle_s
     uint8_t (*iic_read_with_wait)(uint8_t addr, uint8_t reg,
                                   uint8_t *buf, uint16_t len);                         /**< point to an iic_read_with_wait function address */
     void (*delay_ms)(uint32_t ms);                                                     /**< point to a delay_ms function address */
+#ifdef DRIVER_HDC1080_WITH_DEBUG_PRINT
     void (*debug_print)(const char *const fmt, ...);                                   /**< point to a debug_print function address */
+#endif
     uint8_t inited;                                                                    /**< inited flag */
 } hdc1080_handle_t;
 
@@ -207,7 +209,11 @@ typedef struct hdc1080_info_s
  * @param[in] FUC pointer to a debug_print function address
  * @note      none
  */
+#ifdef DRIVER_HDC1080_WITH_DEBUG_PRINT
 #define DRIVER_HDC1080_LINK_DEBUG_PRINT(HANDLE, FUC)           (HANDLE)->debug_print = FUC
+#else
+#define DRIVER_HDC1080_LINK_DEBUG_PRINT(HANDLE, FUC)           ((void)0)
+#endif
 
 /**
  * @}

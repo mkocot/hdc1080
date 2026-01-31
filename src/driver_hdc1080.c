@@ -66,6 +66,19 @@
 #define HDC1080_REG_DEVICE_ID          0xFF        /**< device id register */
 
 /**
+ * @brief helper macros
+ */
+#ifdef DRIVER_DEBUG_PRINT
+#error DRIVER_DEBUG_PRINT is already defined
+#endif
+
+#ifdef DRIVER_HDC1080_WITH_DEBUG_PRINT
+#define DRIVER_DEBUG_PRINT(FMT, ...) handle->debug_print(FMT, ##__VA_ARGS__)
+#else
+#define DRIVER_DEBUG_PRINT(FMT, ...) ((void)0)
+#endif
+
+/**
  * @brief      read data with wait
  * @param[in]  *handle pointer to an hdc1080 handle structure
  * @param[in]  reg register address
@@ -166,64 +179,66 @@ uint8_t hdc1080_init(hdc1080_handle_t *handle)
     {
         return 2;                                                              /* return error */
     }
+#ifdef DRIVER_HDC1080_WITH_DEBUG_PRINT
     if (handle->debug_print == NULL)                                           /* check debug_print */
     {
         return 3;                                                              /* return error */
     }
+#endif
     if (handle->iic_init == NULL)                                              /* check iic_init */
     {
-        handle->debug_print("hdc1080: iic_init is null.\n");                   /* iic_init is null */
+        DRIVER_DEBUG_PRINT("hdc1080: iic_init is null.\n");                    /* iic_init is null */
         
         return 3;                                                              /* return error */
     }
     if (handle->iic_deinit == NULL)                                            /* check iic_deinit */
     {
-        handle->debug_print("hdc1080: iic_deinit is null.\n");                 /* iic_deinit is null */
+        DRIVER_DEBUG_PRINT("hdc1080: iic_deinit is null.\n");                  /* iic_deinit is null */
         
         return 3;                                                              /* return error */
     }
     if (handle->iic_read == NULL)                                              /* check iic_read */
     {
-        handle->debug_print("hdc1080: iic_read is null.\n");                   /* iic_read is null */
+        DRIVER_DEBUG_PRINT("hdc1080: iic_read is null.\n");                    /* iic_read is null */
         
         return 3;                                                              /* return error */
     }
     if (handle->iic_read_with_wait == NULL)                                    /* check iic_read_with_wait */
     {
-        handle->debug_print("hdc1080: iic_read_with_wait is null.\n");         /* iic_read_with_wait is null */
+        DRIVER_DEBUG_PRINT("hdc1080: iic_read_with_wait is null.\n");          /* iic_read_with_wait is null */
         
         return 3;                                                              /* return error */
     }
     if (handle->iic_write == NULL)                                             /* check iic_write */
     {
-        handle->debug_print("hdc1080: iic_write is null.\n");                  /* iic_write is null */
+        DRIVER_DEBUG_PRINT("hdc1080: iic_write is null.\n");                   /* iic_write is null */
         
         return 3;                                                              /* return error */
     }
     if (handle->delay_ms == NULL)                                              /* check delay_ms */
     {
-        handle->debug_print("hdc1080: delay_ms is null.\n");                   /* delay_ms is null */
+        DRIVER_DEBUG_PRINT("hdc1080: delay_ms is null.\n");                    /* delay_ms is null */
         
         return 3;                                                              /* return error */
     }
     
     if (handle->iic_init() != 0)                                               /* iic init */
     {
-        handle->debug_print("hdc1080: iic init failed.\n");                    /* iic init failed */
+        DRIVER_DEBUG_PRINT("hdc1080: iic init failed.\n");                     /* iic init failed */
         
         return 1;                                                              /* return error */
     }
     res = a_hdc1080_iic_read(handle, HDC1080_REG_MANUFACTURER_ID, &id);        /* read manufacturer id */
     if (res != 0)                                                              /* check result */
     {
-        handle->debug_print("hdc1080: read manufacturer id failed.\n");        /* read manufacturer id failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read manufacturer id failed.\n");         /* read manufacturer id failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 4;                                                              /* return error */
     }
     if (id != 0x5449)                                                          /* check id */
     {
-        handle->debug_print("hdc1080: manufacturer id is invalid.\n");         /* read manufacturer id failed */
+        DRIVER_DEBUG_PRINT("hdc1080: manufacturer id is invalid.\n");          /* read manufacturer id failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 5;                                                              /* return error */
@@ -231,14 +246,14 @@ uint8_t hdc1080_init(hdc1080_handle_t *handle)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_DEVICE_ID, &id);              /* read device id */
     if (res != 0)                                                              /* check result */
     {
-        handle->debug_print("hdc1080: read device id failed.\n");              /* read device id failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read device id failed.\n");               /* read device id failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 4;                                                              /* return error */
     }
     if (id != 0x1050)                                                          /* check id */
     {
-        handle->debug_print("hdc1080: device id is invalid.\n");               /* read device id failed */
+        DRIVER_DEBUG_PRINT("hdc1080: device id is invalid.\n");                /* read device id failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 5;                                                              /* return error */
@@ -247,7 +262,7 @@ uint8_t hdc1080_init(hdc1080_handle_t *handle)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);               /* read config */
     if (res != 0)                                                              /* check result */
     {
-        handle->debug_print("hdc1080: read config failed.\n");                 /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");                  /* read config failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 6;                                                              /* return error */
@@ -257,7 +272,7 @@ uint8_t hdc1080_init(hdc1080_handle_t *handle)
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);               /* write config */
     if (res != 0)                                                              /* check result */
     {
-        handle->debug_print("hdc1080: write config failed.\n");                /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");                 /* write config failed */
         (void)handle->iic_deinit();                                            /* iic deinit */
         
         return 6;                                                              /* return error */
@@ -291,7 +306,7 @@ uint8_t hdc1080_deinit(hdc1080_handle_t *handle)
     
     if (handle->iic_deinit() != 0)                                 /* iic deinit */
     {
-        handle->debug_print("hdc1080: iic deinit failed.\n");      /* iic deinit failed */
+        DRIVER_DEBUG_PRINT("hdc1080: iic deinit failed.\n");       /* iic deinit failed */
         
         return 1;                                                  /* return error */
     }
@@ -332,7 +347,7 @@ uint8_t hdc1080_read_temperature_humidity(hdc1080_handle_t *handle, uint16_t *te
                                        temperature_raw);                               /* read temperature */
     if (res != 0)                                                                      /* check result */
     {
-        handle->debug_print("hdc1080: read temperature failed.\n");                    /* read temperature failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read temperature failed.\n");                     /* read temperature failed */
         
         return 1;                                                                      /* return error */
     }
@@ -340,7 +355,7 @@ uint8_t hdc1080_read_temperature_humidity(hdc1080_handle_t *handle, uint16_t *te
     res = a_hdc1080_iic_read_with_wait(handle, HDC1080_REG_HUMIDITY, humidity_raw);    /* read humidity */
     if (res != 0)                                                                      /* check result */
     {
-        handle->debug_print("hdc1080: read humidity failed.\n");                       /* read humidity failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read humidity failed.\n");                        /* read humidity failed */
         
         return 1;                                                                      /* return error */
     }
@@ -377,7 +392,7 @@ uint8_t hdc1080_read_temperature(hdc1080_handle_t *handle, uint16_t *temperature
     res = a_hdc1080_iic_read_with_wait(handle, HDC1080_REG_TEMPERATURE, temperature_raw);        /* read temperature */
     if (res != 0)                                                                                /* check result */
     {
-        handle->debug_print("hdc1080: read temperature failed.\n");                              /* read temperature failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read temperature failed.\n");                               /* read temperature failed */
         
         return 1;                                                                                /* return error */
     }
@@ -414,7 +429,7 @@ uint8_t hdc1080_read_humidity(hdc1080_handle_t *handle, uint16_t *humidity_raw, 
     res = a_hdc1080_iic_read_with_wait(handle, HDC1080_REG_HUMIDITY, humidity_raw);        /* read humidity */
     if (res != 0)                                                                          /* check result */
     {
-        handle->debug_print("hdc1080: read humidity failed.\n");                           /* read humidity failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read humidity failed.\n");                            /* read humidity failed */
         
         return 1;                                                                          /* return error */
     }
@@ -450,7 +465,7 @@ uint8_t hdc1080_software_reset(hdc1080_handle_t *handle)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -459,7 +474,7 @@ uint8_t hdc1080_software_reset(hdc1080_handle_t *handle)
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);        /* write config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: write config failed.\n");         /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");          /* write config failed */
         
         return 1;                                                       /* return error */
     }
@@ -496,7 +511,7 @@ uint8_t hdc1080_set_heater(hdc1080_handle_t *handle, hdc1080_bool_t enable)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -505,7 +520,7 @@ uint8_t hdc1080_set_heater(hdc1080_handle_t *handle, hdc1080_bool_t enable)
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);        /* write config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: write config failed.\n");         /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");          /* write config failed */
         
         return 1;                                                       /* return error */
     }
@@ -541,7 +556,7 @@ uint8_t hdc1080_get_heater(hdc1080_handle_t *handle, hdc1080_bool_t *enable)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -578,7 +593,7 @@ uint8_t hdc1080_set_mode(hdc1080_handle_t *handle, hdc1080_mode_t mode)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -587,7 +602,7 @@ uint8_t hdc1080_set_mode(hdc1080_handle_t *handle, hdc1080_mode_t mode)
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);        /* write config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: write config failed.\n");         /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");          /* write config failed */
         
         return 1;                                                       /* return error */
     }
@@ -623,7 +638,7 @@ uint8_t hdc1080_get_mode(hdc1080_handle_t *handle, hdc1080_mode_t *mode)
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -660,7 +675,7 @@ uint8_t hdc1080_get_battery_status(hdc1080_handle_t *handle, hdc1080_battery_sta
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -697,7 +712,7 @@ uint8_t hdc1080_set_temperature_resolution(hdc1080_handle_t *handle, hdc1080_tem
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -706,7 +721,7 @@ uint8_t hdc1080_set_temperature_resolution(hdc1080_handle_t *handle, hdc1080_tem
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);        /* write config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: write config failed.\n");         /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");          /* write config failed */
         
         return 1;                                                       /* return error */
     }
@@ -742,7 +757,7 @@ uint8_t hdc1080_get_temperature_resolution(hdc1080_handle_t *handle, hdc1080_tem
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);                 /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");                   /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");                    /* read config failed */
         
         return 1;                                                                /* return error */
     }
@@ -779,7 +794,7 @@ uint8_t hdc1080_set_humidity_resolution(hdc1080_handle_t *handle, hdc1080_humidi
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");          /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");           /* read config failed */
         
         return 1;                                                       /* return error */
     }
@@ -788,7 +803,7 @@ uint8_t hdc1080_set_humidity_resolution(hdc1080_handle_t *handle, hdc1080_humidi
     res = a_hdc1080_iic_write(handle, HDC1080_REG_CONFIG, data);        /* write config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: write config failed.\n");         /* write config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: write config failed.\n");          /* write config failed */
         
         return 1;                                                       /* return error */
     }
@@ -824,7 +839,7 @@ uint8_t hdc1080_get_humidity_resolution(hdc1080_handle_t *handle, hdc1080_humidi
     res = a_hdc1080_iic_read(handle, HDC1080_REG_CONFIG, &data);             /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read config failed.\n");               /* read config failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read config failed.\n");               /* read config failed */
         
         return 1;                                                            /* return error */
     }
@@ -861,7 +876,7 @@ uint8_t hdc1080_get_serial_id(hdc1080_handle_t *handle, uint8_t id[6])
     res = a_hdc1080_iic_read(handle, HDC1080_REG_SERIAL_ID_0, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read serial id 0  failed.\n");         /* read serial id 0 failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read serial id 0  failed.\n");          /* read serial id 0 failed */
         
         return 1;                                                            /* return error */
     }
@@ -870,7 +885,7 @@ uint8_t hdc1080_get_serial_id(hdc1080_handle_t *handle, uint8_t id[6])
     res = a_hdc1080_iic_read(handle, HDC1080_REG_SERIAL_ID_1, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read serial id 1  failed.\n");         /* read serial id 1 failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read serial id 1  failed.\n");          /* read serial id 1 failed */
         
         return 1;                                                            /* return error */
     }
@@ -879,7 +894,7 @@ uint8_t hdc1080_get_serial_id(hdc1080_handle_t *handle, uint8_t id[6])
     res = a_hdc1080_iic_read(handle, HDC1080_REG_SERIAL_ID_2, &data);        /* read config */
     if (res != 0)
     {
-        handle->debug_print("hdc1080: read serial id 2  failed.\n");         /* read serial id 2 failed */
+        DRIVER_DEBUG_PRINT("hdc1080: read serial id 2  failed.\n");          /* read serial id 2 failed */
         
         return 1;                                                            /* return error */
     }
