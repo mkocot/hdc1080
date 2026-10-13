@@ -351,7 +351,12 @@ uint8_t hdc1080_read_temperature_humidity(hdc1080_handle_t *handle, uint16_t *te
         
         return 1;                                                                      /* return error */
     }
+#ifdef DRIVER_HDC1080_WITH_FLOAT_OUTPUT
     *temperature_s = (float)(*temperature_raw) / 65536.0f * 165.0f - 40.0f;            /* convert temperature */
+#else
+    (void)temperature_s;
+#endif
+
     res = a_hdc1080_iic_read_with_wait(handle, HDC1080_REG_HUMIDITY, humidity_raw);    /* read humidity */
     if (res != 0)                                                                      /* check result */
     {
@@ -359,7 +364,11 @@ uint8_t hdc1080_read_temperature_humidity(hdc1080_handle_t *handle, uint16_t *te
         
         return 1;                                                                      /* return error */
     }
+#ifdef DRIVER_HDC1080_WITH_FLOAT_OUTPUT
     *humidity_s = (float)(*humidity_raw) / 65536.0f * 100.0f;                          /* get humidity */
+#else
+    (void)humidity_s;
+#endif
     
     return 0;                                                                          /* success return 0 */
 }
@@ -396,7 +405,11 @@ uint8_t hdc1080_read_temperature(hdc1080_handle_t *handle, uint16_t *temperature
         
         return 1;                                                                                /* return error */
     }
+#ifdef DRIVER_HDC1080_WITH_FLOAT_OUTPUT
     *temperature_s = (float)(*temperature_raw) / 65536.0f * 165.0f - 40.0f;                      /* convert temperature */
+#else
+    (void)temperature_s;
+#endif
     
     return 0;                                                                                    /* success return 0 */
 }
@@ -433,7 +446,11 @@ uint8_t hdc1080_read_humidity(hdc1080_handle_t *handle, uint16_t *humidity_raw, 
         
         return 1;                                                                          /* return error */
     }
+#ifdef DRIVER_HDC1080_WITH_FLOAT_OUTPUT
     *humidity_s = (float)(*humidity_raw) / 65536.0f * 100.0f;                              /* get humidity */
+#else
+    (void)humidity_s;
+#endif
     
     return 0;                                                                              /* success return 0 */
 }
